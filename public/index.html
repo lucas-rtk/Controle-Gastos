@@ -1,0 +1,36 @@
+<html dir="ltr">
+    <link rel="stylesheet" type="text/css" href="./css/index.css">
+    <script src="./scripts/index.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> 
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>        
+        <div id="login" class="etapa">
+            <h1>Bem vindo ao controle de gastos</h1>
+            <h4>Lembre-se: Se você não comprar, o desconto é maior.</h4><br>
+            <form class="form">
+                <label>Email: </label><br>
+                <input type="email" id="txtEmail" name="email" placeholder="Informe o seu e-mail"><br><br>
+                <label>Senha: </label><br>
+                <input type="password" id="txtSenha" name="senha" placeholder="Informe a sua senha"><br><br>
+                <label>Usuário novo? <a onclick="return TrocarDiv('login', 'registrar');" href="registrar.html">Clique aqui</a> para se registrar.</label><br><br>
+                <span id="btnEntrar" class="submit" onkeypress="if (event && event.keyCode == 32) RealizarLogin();" onclick="return RealizarLogin()">Entrar</span>
+            </form>    
+        </div>
+        <div id="registrar" class="etapaModal">
+            <h1>Criar novo usuário</h1>
+            <h4>Informe os dados abaixo para criar o seu usuário.</h4><br>
+            <form id="FormRegistro" class="form">
+                <label>Email: </label><input type="email" id="txtEmailRegistro" name="txtEmail" placeholder="Informe o seu e-mail"><br>
+                <span id="erroEmail" class="MensagemErro"></span><br><br>
+                <label>Senha: </label><input type="password" id="txtSenhaRegistro" name="txtSenhaRegistro" placeholder="Informe a sua senha"><br>
+                <span id="erroSenha" class="MensagemErro"></span><br><br>
+                <label>Repita a senha: </label><input type="password" id="txtSenhaConfirma" name="txtSenhaConfirma" placeholder="Confirme sua senha"><br>
+                <span id="erroSenhaConfirma" class="MensagemErro"></span><br><br>
+                <span id="btnNovo" class="submit" onkeypress="if (event && event.keyCode == 32) CadastrarUsuario();" onclick="return CadastrarUsuario()">Registrar</span>
+                <span id="btnCancelar" class="submit" onclick="return TrocarDiv('registrar', 'login')">Cancelar</span>
+            </form>                
+        </div>
+    </body>
+</html>
