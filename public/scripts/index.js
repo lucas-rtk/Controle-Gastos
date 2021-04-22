@@ -9,45 +9,82 @@ function TrocarDiv(divAtual, divNova) {
 }
 
 function ResetarErrosRegistro(){
+    document.getElementById('erroNome').innerHTML = "";
     document.getElementById('erroEmail').innerHTML = "";
     document.getElementById('erroSenha').innerHTML = "";
     document.getElementById('erroSenhaConfirma').innerHTML = "";
 }
 
-function ValidarUsuario(){
-    let Email = document.forms["FormRegistro"]["txtEmailRegistro"].value;
-    let Senha = document.forms["FormRegistro"]["txtSenhaRegistro"].value;
-    let SenhaConfirma = document.forms["FormRegistro"]["txtSenhaConfirma"].value;
-    let Sucesso = true;
+function ValidarUsuario(nome, email, senha , senhaConfirma){
+    let sucesso = true;
 
-    ResetarErrosRegistro();
+    ResetarErrosRegistro();    
 
-    if (Email.length < 1){
-        document.getElementById('erroEmail').innerHTML = "Informe um e-mail para registrar o usuário!";
-        Sucesso = false;
+    if (nome.length < 1){
+        document.getElementById('erroNome').innerHTML = "Informe um nome para registrar o usuário!";
+        sucesso = false;
     }
 
-    if (Senha.length < 1){
+    if (email.length < 1){
+        document.getElementById('erroEmail').innerHTML = "Informe um e-mail para registrar o usuário!";
+        sucesso = false;
+    }
+
+    if (senha.length < 1){
         document.getElementById('erroSenha').innerHTML = "Informe uma senha para o seu usuário!";
-        Sucesso = false;
+        sucesso = false;
     }
     
-    if (SenhaConfirma.length < 1){
+    if (senhaConfirma.length < 1){
         document.getElementById('erroSenhaConfirma').innerHTML = "Confirme a senha informada!";
-        Sucesso = false;
+        sucesso = false;
     }
 
-    if (Senha != SenhaConfirma){
+    if (senha != senhaConfirma){
         document.getElementById('erroSenhaConfirma').innerHTML = "As senhas informadas não são iguais!";
-        Sucesso = false;
+        sucesso = false;
     }
 
-    return Sucesso;
+    return sucesso;                    
 }
 
 function CadastrarUsuario(){
-    if (ValidarUsuario() == false)
-        return false;
+    let nome = document.forms["FormRegistro"]["txtNomeRegistro"].value;
+    let email = document.forms["FormRegistro"]["txtEmailRegistro"].value;
+    let senha = document.forms["FormRegistro"]["txtSenhaRegistro"].value;
+    let senhaConfirma = document.forms["FormRegistro"]["txtSenhaConfirma"].value;
 
-    
+    if (ValidarUsuario(nome, email, senha, senhaConfirma) == false)
+        return false;
+            
+    let headers = new Headers();
+    headers.append("Content-Type", "application/json");
+
+    fetch("http://localhost:5000/api/usuarios", {
+        method: "POST",
+        body: JSON.stringify({ nome: `${nome}`, email: `${email}`, senha: `${senha}` }),
+        headers: headers
+    })
+    .then(resposta => {
+        if (resposta.status == 201){
+            alert('Usuário cadastrado com sucesso!');
+            TrocarDiv('registrar', 'login');
+            return true;
+        } else if (resposta.status = 400){
+            document.getElementById('erroEmail').innerHTML = "Já existe um usuário para este endereço de e-mail!";                     
+            return false;
+        } else {
+            console.log(resposta);
+            alert('Houve um erro ao cadastrar o usuário!');
+            return false;                    
+        }
+    })
+    .catch((erro) => {
+        alert(erro.message);
+        return false;
+    });                
+}
+
+function RealizarLogin(){
+    window.location.href = "./dashboard.html";
 }

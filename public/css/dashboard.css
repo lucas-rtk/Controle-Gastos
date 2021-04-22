@@ -1,0 +1,22 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    max-width: 100%;
+    box-sizing: border-box;
+    -webkit-font-smoothing: subpixel-antialiased;
+    font-family: 'Roboto', sans-serif;    
+}
+body{    
+    background-color: #34568B;
+}
+.etapa{
+    margin: auto;
+    width: 80vw;
+    height: auto; 
+    border: 3px solid black;
+    padding: 10px;
+    border-radius: 25px;
+    background: white;
+    box-shadow: 2px 2px 5px black;
+    display: block;
+}
