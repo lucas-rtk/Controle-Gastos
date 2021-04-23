@@ -31,13 +31,10 @@ router.post('/', (requisicao, resposta) => {
 router.post('/login', (requisicao, resposta) => {
     getUsuario(requisicao.body.email)
         .then(retorno => {
-            if (retorno == null) {
-                return resposta.status(400).json({ Erro: "Endereço de e-mail ou senha inválidos!" });
+            if ((retorno == null) || (retorno.senha != requisicao.body.senha)) {
+                return resposta.status(400).json("Endereço de e-mail ou senha inválidos!");
             } else {                      
-                if (retorno.senha != requisicao.body.senha)
-                    return resposta.status(400).json({ Erro: "Endereço de e-mail ou senha inválidos!" });
-
-                retorno.senha = null;
+                retorno.senha = null; //remove a senha para não retornar ao frontend
                 return resposta.status(200).json(retorno);
             }
         })

@@ -9,13 +9,14 @@
         <div id="login" class="etapa">
             <h1>Bem vindo ao controle de gastos</h1>
             <h4>Lembre-se: Se você não comprar, o desconto é maior.</h4><br>
-            <form class="form">
+            <form id="formLogin" class="form">
                 <label>Email: </label><br>
-                <input type="email" id="txtEmail" name="email" placeholder="Informe o seu e-mail"><br><br>
+                <input type="email" id="emailLogin" name="emailLogin" placeholder="Informe o seu e-mail"><br><br>
                 <label>Senha: </label><br>
-                <input type="password" id="txtSenha" name="senha" placeholder="Informe a sua senha"><br><br>
+                <input type="password" id="senhaLogin" name="senhaLogin" placeholder="Informe a sua senha"><br>
+                <span id="erroLogin" class="MensagemErro"></span><br><br>
                 <label>Usuário novo? <a onclick="return TrocarDiv('login', 'registrar');" href="registrar.html">Clique aqui</a> para se registrar.</label><br><br>
-                <span id="btnEntrar" class="submit" onkeypress="if (event && event.keyCode == 32) RealizarLogin();" onclick="return RealizarLogin()">Entrar</span>
+                <span id="btnEntrar" class="submit" onclick="return RealizarLogin()">Entrar</span>
             </form>    
         </div>
         <div id="registrar" class="etapaModal">

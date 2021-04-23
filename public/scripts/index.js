@@ -48,6 +48,22 @@ function ValidarUsuario(nome, email, senha , senhaConfirma){
     return sucesso;                    
 }
 
+function ValidarLogin(email, senha){
+    document.getElementById('erroLogin').innerHTML = "";    
+
+    if (email.length < 1){
+        document.getElementById('erroLogin').innerHTML = "Informe um e-mail para entrar no sistema!";
+        return false;
+    }
+
+    if (senha.length < 1){
+        document.getElementById('erroLogin').innerHTML = "Informe a senha do seu usuário!";
+        return false;
+    }    
+
+    return true;
+}
+
 function CadastrarUsuario(){
     let nome = document.forms["FormRegistro"]["txtNomeRegistro"].value;
     let email = document.forms["FormRegistro"]["txtEmailRegistro"].value;
@@ -86,5 +102,41 @@ function CadastrarUsuario(){
 }
 
 function RealizarLogin(){
-    window.location.href = "./dashboard.html";
+    let email = document.forms["formLogin"]["emailLogin"].value;
+    let senha = document.forms["formLogin"]["senhaLogin"].value;    
+
+    if (ValidarLogin(email, senha) == false)
+        return false;
+
+    let headers = new Headers();
+    headers.append("Content-Type", "application/json");
+
+    fetch("http://localhost:5000/api/usuarios/login", {
+        method: "POST",
+        body: JSON.stringify({ email: `${email}`, senha: `${senha}` }),
+        headers: headers
+    })
+    .then(resposta => {
+        resposta.json()
+        .then((conteudo) => {
+            if (resposta.status == 200){
+                sessionStorage.setItem("usuario", JSON.stringify(conteudo));
+                window.location.href = "./dashboard.html";
+            } else if (resposta.status = 400){
+                resposta.json()
+                .then((conteudo) => {
+                    document.getElementById('erroLogin').innerHTML = conteudo;
+                    return false;
+                });            
+            } else {
+                console.log(resposta);
+                alert('Houve um erro ao realizar o login!');
+                return false;                    
+            }
+        }); 
+    })
+    .catch((erro) => {
+        alert('Houve um erro ao realizar o login! \n' + erro.message);
+        return false;
+    });            
 }
