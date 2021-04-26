@@ -1,13 +1,79 @@
 <html dir="ltr">
-    <link rel="stylesheet" type="text/css" href="./css/dashboard.css">
-    <script src="./scripts/dashboard.js"></script>    
+    <link rel="stylesheet" type="text/css" href="./css/dashboard.css">    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="./scripts/dashboard.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> 
     <head>
         <meta charset="UTF-8">
     </head>
-    <body onload="VerificaUsuarioLogado()">        
-        <div id="div-fundo" class="etapa">
-            <h1 id="boasVindas"></h1>
-        </div>        
+    <body onload="InicializarDashBoard()">        
+        <div id="div-fundo" class="fundo">
+            <h2 id="boasVindas"></h2><br>
+            
+            <div class="tabControl">
+                <button class="tabLink" onclick="AbrirTab(event, 'dashboard')" id="defaultTab">Dashboard</button>
+                <button class="tabLink" onclick="AbrirTab(event, 'editarCompra')">Compras</button>
+                <button class="tabLink" onclick="AbrirTab(event, 'listarCategorias')">Categorias</button>
+                <button class="tabLink" onclick="AbrirTab(event, 'listarMeiosPgto')">Meios de pagamento</button>
+                <button class="botaoSair" onclick="return Deslogar()">Sair</button>
+            </div>
+            
+            <div id="dashboard" class="tab">
+                <div class="gridGraficos">
+                    <div id="categoriaPizza" class="graficoCategoriaPizza"><span id="erroCategoriaPizza" class="MensagemErro"></span></div>
+                    <div id="categoriaColuna" class="graficoCategoriaColuna"><span id="erroCategoriaColuna" class="MensagemErro"></span></div>
+                    <div id="categoriaLinha" class="graficoCategoriaLinha"><span id="erroCategoriaLinha" class="MensagemErro"></span></div>
+                    <div id="meiosPizza" class="graficoMeiosPizza"><span id="erroMeiosPizza" class="MensagemErro"></span></div>
+                    <div id="meiosColuna" class="graficoMeiosColuna"><span id="erroMeiosColuna" class="MensagemErro"></span></div>
+                    <div id="meiosLinha" class="graficoMeiosLinha"><span id="erroMeiosLinha" class="MensagemErro"></span></div>
+                </div>                
+            </div>
+                               
+            <div id="editarCompra" class="tab">
+                <h3>Editar compra</h3>
+            </div>                        
+
+            <div id="listarCategorias" class="tab">
+                <div id="divListaCategorias" class="tabInterna">
+                    <span class="submit" onclick="return AlternarTabCategoria('divAlteracaoCategorias', null, null)">Nova categoria</span><br><br>
+                    <table id="tabelaCategorias" class="tabelaListagem">
+                        <thead>
+                            <th class="tituloTabela" width="600px">Descrição</th> 
+                            <th class="tituloTabela" width="100px" colspan="2">Ações</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>                
+                </div>       
+                <div id="divAlteracaoCategorias" class="tabInterna">
+                    <form id="formCategoria">
+                        <label>Descrição: </label><input type="text" id="txtDescricaoCategoria" name="txtDescricaoCategoria" size="50" placeholder="descrição da categoria"><br>
+                        <span id="erroCategoria" class="MensagemErro"></span><br><br>
+                        <span class="submit" onclick="return SalvarCategoria()">Confirmar</span>
+                        <span class="submit" onclick="return CancelarAlteracaoCategoria()">Cancelar</span>
+                    </form>                     
+                </div> 
+            </div>                        
+            
+            <div id="listarMeiosPgto" class="tab">
+                <div id="divListaMeiosPagamento" class="tabInterna">
+                    <span class="submit" onclick="return AlternarTabMeioPgto('divAlteracaoMeiosPagamento', null, null)">Novo meio de pagamento</span><br><br>
+                    <table id="tabelaMeiosPgto" class="tabelaListagem">
+                        <thead>
+                            <th class="tituloTabela" width="600px">Descrição</th> 
+                            <th class="tituloTabela" width="100px" colspan="2">Ações</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>                
+                </div>       
+                <div id="divAlteracaoMeiosPagamento" class="tabInterna">
+                    <form id="formMeioPagamento">
+                        <label>Descrição: </label><input type="text" id="txtDescricaoMeioPagamento" name="txtDescricaoMeioPagamento" size="50" placeholder="descrição do meio de pagamento"><br>
+                        <span id="erroMeioPagamento" class="MensagemErro"></span><br><br>
+                        <span class="submit" onclick="return SalvarMeioPagamento()">Confirmar</span>
+                        <span class="submit" onclick="return CancelarAlteracaoMeioPagamento()">Cancelar</span>
+                    </form>                     
+                </div>         
+            </div>                                    
+        </div>                        
     </body>
 </html>

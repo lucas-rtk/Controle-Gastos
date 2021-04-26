@@ -9,7 +9,7 @@
 body{    
     background-color: #34568B;
 }
-.etapa{
+.fundo{
     margin: 20px auto;
     width: 90vw;
     height: auto; 
@@ -19,4 +19,99 @@ body{
     background: white;
     box-shadow: 2px 2px 5px black;
     display: block;
+}
+.tabControl{
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+.tabLink{
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+.tabLink:hover{
+    background-color: #ddd;
+}
+.tabLink.active{
+    background-color: #ccc;
+}
+.botaoSair{
+    background-color: inherit;
+    float: right;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;    
+}
+.botaoSair:hover{
+    background-color: #780c1c;
+    color: white;
+}
+.tab{
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+.tabInterna{
+    display: none;
+    padding: 6px 12px;    
+}
+.graficoCategoriaPizza{
+    grid-column: 1;
+    grid-row: 1;
+}
+.graficoCategoriaColuna{
+    grid-column: 2;
+    grid-row: 1;
+}
+.graficoCategoriaLinha{
+    grid-column: 3;
+    grid-row: 1;
+}
+.graficoMeiosPizza{
+    grid-column: 1;
+    grid-row: 2;
+}
+.graficoMeiosColuna{
+    grid-column: 2;
+    grid-row: 2;
+}
+.graficoMeiosLinha{
+    grid-column: 3;
+    grid-row: 2;
+}
+.gridGraficos{
+    display: grid;
+}
+.MensagemErro{
+    color: orangered;
+    font-weight: bold;
+}
+.tabelaListagem{
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+}
+.tituloTabela{
+    text-align: center;
+    font-weight: bold;
+    background-color: #f1f1f1; 
+    padding: 14px 16px;   
+}
+.submit{
+    width: 200px;
+    background-color: #063970;
+    color: white;
+    text-align: center;
+    padding: 5px 5px 5px 5px;    
+}
+.submit:hover{
+    background-color: #abdbe3;
+    cursor: pointer;
 }

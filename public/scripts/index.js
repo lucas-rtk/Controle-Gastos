@@ -103,7 +103,7 @@ function CadastrarUsuario(){
 
 function RealizarLogin(){
     let email = document.forms["formLogin"]["emailLogin"].value;
-    let senha = document.forms["formLogin"]["senhaLogin"].value;    
+    let senha = document.forms["formLogin"]["senhaLogin"].value;
 
     if (ValidarLogin(email, senha) == false)
         return false;
