@@ -12,7 +12,7 @@
             
             <div class="tabControl">
                 <button class="tabLink" onclick="AbrirTab(event, 'dashboard')" id="defaultTab">Dashboard</button>
-                <button class="tabLink" onclick="AbrirTab(event, 'editarCompra')">Compras</button>
+                <button class="tabLink" onclick="AbrirTab(event, 'listarCompras')">Compras</button>
                 <button class="tabLink" onclick="AbrirTab(event, 'listarCategorias')">Categorias</button>
                 <button class="tabLink" onclick="AbrirTab(event, 'listarMeiosPgto')">Meios de pagamento</button>
                 <button class="botaoSair" onclick="return Deslogar()">Sair</button>
@@ -29,8 +29,43 @@
                 </div>                
             </div>
                                
-            <div id="editarCompra" class="tab">
-                <h3>Editar compra</h3>
+            <div id="listarCompras" class="tab">
+                <div id="divListaCompras" class="tabInterna">
+                    <span class="submit" onclick="return AlternarTabCompra('divAlteracaoCompras', null)">Nova compra</span><br><br>
+                    <table id="tabelaCompras" class="tabelaListagem">
+                        <thead>
+                            <th class="tituloTabela" width="300px">Descrição</th> 
+                            <th class="tituloTabela" width="60px">Data da compra</th> 
+                            <th class="tituloTabela" width="200px">Categoria</th> 
+                            <th class="tituloTabela" width="200px">Meio de pagamento</th> 
+                            <th class="tituloTabela" width="50px">Total</th> 
+                            <th class="tituloTabela" width="50px">Parcelas</th> 
+                            <th class="tituloTabela" width="100px" colspan="2">Ações</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>                
+                </div>       
+                <div id="divAlteracaoCompras" class="tabInterna">
+                    <form id="formCompra">
+                        <label>Descrição: </label><input type="text" id="txtDescricaoCompra" name="txtDescricaoCompra" size="25" placeholder="Descrição da compra (opcional)"><br><br>
+                        <label>Data da compra: </label><input type="date" id="txtdataCompra" name="txtdataCompra"><br><br>
+                        <label>Categoria: </label><select id="selectCategoriaCompra" name="selectCategoriaCompra"></select><br><br>
+                        <label>Meio de pagamento: </label><select id="selectMeioCompra" name="selectMeioCompra"></select><br><br>
+                        <label>Parcelas:</label><br> 
+                        <span class="tabLink2" width="30px" onclick="return AdicionarParcela()"><img src="./assets/tabela_add.png"></img></span>
+                        <table id="tabelaParcelas" class="tabelaListagem">
+                            <thead>
+                                <th class="tituloTabela2" width="60px">Vencimento</th> 
+                                <th class="tituloTabela2" width="50px">Valor</th>
+                                <th class="tituloTabela2" width="10px"></th>
+                            </thead>
+                            <tbody></tbody>
+                        </table> 
+                        <span id="erroCompra" class="MensagemErro"></span><br><br>
+                        <span class="submit" onclick="return SalvarCompra()">Confirmar</span>
+                        <span class="submit" onclick="return CancelarAlteracaoCompra()">Cancelar</span>
+                    </form>                     
+                </div>                
             </div>                        
 
             <div id="listarCategorias" class="tab">

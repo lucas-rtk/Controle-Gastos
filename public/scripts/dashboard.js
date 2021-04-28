@@ -52,6 +52,9 @@ function AbrirTab(evento, nomeTab) {
       case 'dashboard':
         DesenharGraficos();
         break;
+      case 'listarCompras':
+        AlternarTabCompra('divListaCompras', null);
+        break;
       case 'listarMeiosPgto':
         AlternarTabMeioPgto('divListaMeiosPagamento', null, null);
         break;
@@ -60,6 +63,22 @@ function AbrirTab(evento, nomeTab) {
         break;
     }
 } 
+
+function AlternarTabCompra(nomeTab, id, descricao){
+  document.getElementById('divListaCompras').style.display = "none";
+  document.getElementById('divAlteracaoCompras').style.display = "none";
+
+  document.getElementById(nomeTab).style.display = "block";
+  
+  switch(nomeTab){
+    case 'divListaCompras':
+      ListarCompras();
+      break;
+    case 'divAlteracaoCompras':
+      AlterarCompra(id);
+      break;
+  }
+}
 
 function AlternarTabMeioPgto(nomeTab, id, descricao){
   document.getElementById('divListaMeiosPagamento').style.display = "none";
@@ -485,4 +504,324 @@ function ExcluirCategoria(id, descricao){
 function CancelarAlteracaoCategoria(){
   sessionStorage.removeItem('CategoriaId');
   AlternarTabCategoria('divListaCategorias', null, null); 
+}
+
+function ListarCompras(){
+  let tabelaAtual = document.getElementById('tabelaCompras').getElementsByTagName('tbody')[0];
+  let novaTabela = document.createElement('tbody');
+  let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+
+  fetch(`http://localhost:5000/api/compras/?id_usuario=${usuario.id}`)
+  .then(resposta => {
+      resposta.json()
+      .then((json) => {
+          if (resposta.status == 200){
+            json.forEach((item) => {
+              let novaLinha = novaTabela.insertRow();
+
+              let celDescricao = novaLinha.insertCell();
+              let celDataCompra = novaLinha.insertCell();
+              let celCategoria = novaLinha.insertCell();
+              let celMeioPagamento = novaLinha.insertCell();
+              let celTotal = novaLinha.insertCell();
+              let celParcelas = novaLinha.insertCell();
+              let celEditar = novaLinha.insertCell();
+              let celExcluir = novaLinha.insertCell();
+            
+              celDescricao.innerHTML = item.descricao;
+              celDescricao.style = "padding: 5px";
+
+              celDataCompra.innerHTML = item.dataCompra.toString().substring(8, 10) + '/' + item.dataCompra.toString().substring(5, 7) + '/' + item.dataCompra.toString().substring(0, 4);
+              celDataCompra.style = "text-align: center";              
+
+              celCategoria.innerHTML = item.categoria.descricao;
+              celCategoria.style = "padding: 5px text-align: left";
+
+              celMeioPagamento.innerHTML = item.meioPagamento.descricao;
+              celMeioPagamento.style = "padding: 5px text-align: left";  
+
+              celTotal.innerHTML = item.total.toFixed(2).toString().replace(',', '').replace('.', ',');
+              celTotal.style = "text-align: right";
+
+              celParcelas.innerHTML = item.parcelas.length;
+              celParcelas.style = "text-align: center";
+              
+              celEditar.innerHTML = `<span class="tabLink" width="50px" onclick="return AlternarTabCompra('divAlteracaoCompras', ${item.id});"><img src="./assets/tabela_editar.png"></img></span>`;
+              celExcluir.innerHTML = `<span class="tabLink" width="50px" onclick="return ExcluirCompra(${item.id});"><img src="./assets/tabela_excluir.png"></img></span>`;
+            });             
+          } else {
+              console.log(json.erro);
+              return false;                    
+          }
+      }); 
+  })
+  .catch((erro) => {
+      console.log(erro.message);
+      return false;
+  });
+
+  tabelaAtual.parentNode.replaceChild(novaTabela, tabelaAtual);
+}
+
+function AlterarCompra(id){
+  if (id == null){
+    sessionStorage.removeItem('CompraId');    
+  } else{
+    sessionStorage.setItem('CompraId', id);    
+  }
+
+  PreencherLista('selectCategoriaCompra', 'categorias', () => {
+    PreencherLista('selectMeioCompra', 'meiospagamento', () => {
+      prepararTelaCompra(id);
+    });
+  });
+
+  prepararTelaCompra(id);  
+}
+
+function prepararTelaCompra(id){
+  let tabelaAtual = document.getElementById('tabelaParcelas').getElementsByTagName('tbody')[0];
+  let novaTabela = document.createElement('tbody');
+  tabelaAtual.parentNode.replaceChild(novaTabela, tabelaAtual);
+    
+  document.getElementById('erroCompra').innerHTML = '';
+
+  if (id == null){
+    document.forms['formCompra']['txtDescricaoCompra'].value = '';
+    document.forms['formCompra']['txtdataCompra'].value = formatarData(new Date());    
+  } else {
+    let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+
+    fetch(`http://localhost:5000/api/compras/${id}?id_usuario=${usuario.id}`)
+    .then(resposta => {
+        resposta.json()
+        .then((json) => {
+            if (resposta.status == 200){
+              document.forms['formCompra']['txtDescricaoCompra'].value = json.descricao;
+              document.forms['formCompra']['txtdataCompra'].value = json.dataCompra.toString().substring(0, 10);              
+
+              document.getElementById('selectCategoriaCompra').value = json.categoria.id;
+              document.getElementById('selectMeioCompra').value = json.meioPagamento.id;
+
+              json.parcelas.forEach(item => {
+                AdicionarParcela(item.dataVencimento, item.valor);  
+              });
+            } else {
+                console.log(json.erro);
+                return false;                    
+            }
+        }); 
+    })
+    .catch((erro) => {
+        console.log(erro.message);
+        return false;
+    });
+  }
+}
+
+function PreencherLista(idSelect, url, callback){
+  let select = document.getElementById(idSelect);  
+  let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+  
+  select.options.length = 0;
+  
+  fetch(`http://localhost:5000/api/${url}/?id_usuario=${usuario.id}`)
+  .then(resposta => {
+    resposta.json()
+    .then((json) => {
+      if (resposta.status == 200){
+        json.forEach((item) => {
+          let opcao = document.createElement('option');
+  
+          opcao.value = item.id;
+          opcao.innerHTML = item.descricao;
+  
+          select.appendChild(opcao);                
+        });             
+
+        callback();
+      } else {
+        console.log(json.erro);
+        return false;
+      }
+    }); 
+  })
+  .catch((erro) => {
+    console.log(erro.message);
+    return false;
+  }); 
+}
+
+function CancelarAlteracaoCompra(){
+  sessionStorage.removeItem('CompraId');
+  AlternarTabCompra('divListaCompras', null); 
+}
+
+function formatarData(data) {
+  let temp = new Date(data);
+  let mes = '' + (temp.getMonth() + 1);
+  let dia = '' + temp.getDate();
+  let ano = temp.getFullYear();
+
+  if (mes.length < 2) 
+    mes = '0' + mes;
+  
+  if (dia.length < 2) 
+    dia = '0' + dia;
+
+  return [ano, mes, dia].join('-');
+}
+
+function AdicionarParcela(dataVencimento, valor){
+  let tabela = document.getElementById('tabelaParcelas').getElementsByTagName('tbody')[0];
+  let novaLinha = tabela.insertRow();
+  novaLinha.id = 'parcela_' + tabela.rows.length;
+
+  let celDataVencimento = novaLinha.insertCell();
+  let celValor = novaLinha.insertCell();
+  let celExcluir = novaLinha.insertCell();
+
+  let txtDataVencimento = document.createElement('input');
+  txtDataVencimento.type = 'date';
+  if (dataVencimento == null)
+    txtDataVencimento.value = formatarData(new Date());
+  else
+    txtDataVencimento.value = formatarData(dataVencimento);
+  celDataVencimento.appendChild(txtDataVencimento);
+
+  let txtValor = document.createElement('input');
+  txtValor.type = 'number';
+  txtValor.min = 1;
+  txtValor.step = 'any';
+  if (valor != null)
+    txtValor.value = valor;
+  celValor.appendChild(txtValor);
+      
+  celExcluir.innerHTML = `<span class="tabLink2" display:table; margin:0 auto; width="16px" onclick="return ExcluirParcela('${novaLinha.id}')"><img src="./assets/parcela_excluir.png"></img></span>`;
+}
+
+function ExcluirParcela(id){
+  document.getElementById(id).remove();
+}
+
+function ExcluirCompra(id){
+  if (confirm(`Deseja realmente eliminar esta compra?`)) {
+    let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+
+    fetch(`http://localhost:5000/api/compras/${id}?id_usuario=${usuario.id}`, {
+        method: "DELETE"
+    })
+    .then(resposta => {
+        resposta.json()
+        .then((conteudo) => {
+            console.log(resposta);
+            console.log(conteudo);
+            if (resposta.status == 200){
+              CancelarAlteracaoCompra();    
+            } else {
+              if (resposta.status = 400){
+                alert(conteudo.erro)
+                return false;                            
+              } else {
+                console.log(resposta);
+                alert('Houve um erro ao eliminar a compra!');
+                return false;                    
+              }
+            }
+        }); 
+    })
+    .catch((erro) => {
+        alert('Houve um erro ao eliminar a compra! \n' + erro.message);
+        return false;
+    });     
+  };
+}
+
+function SalvarCompra(){
+  let id = sessionStorage.getItem('CompraId');
+  let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+
+  let soma = 0;
+  let tempParcelas = [];
+  let linhas = document.querySelectorAll('#tabelaParcelas tbody tr');
+
+  for (let i = 0; i < linhas.length; i++) {
+    tempParcelas.push({
+      dataVencimento: linhas[i].cells[0].children[0].value,
+      valor: parseFloat((linhas[i].cells[1].children[0].value || 0))
+    });   
+    
+    soma += parseFloat((linhas[i].cells[1].children[0].value || 0));
+  }
+
+  let compra = {
+    descricao: document.forms["formCompra"]["txtDescricaoCompra"].value,
+    dataCompra: document.forms["formCompra"]["txtdataCompra"].value,
+    categoria: { id: parseInt(document.forms["formCompra"]["selectCategoriaCompra"].value) },
+    meioPagamento: { id: parseInt(document.forms["formCompra"]["selectMeioCompra"].value) },
+    total: soma,
+    parcelas: tempParcelas,
+    idUsuario: usuario.id
+  };    
+
+  console.log(compra);
+
+  let headers = new Headers();
+  headers.append("Content-Type", "application/json");
+
+  if (id == null){
+    fetch("http://localhost:5000/api/compras/", {
+        method: "POST",
+        body: JSON.stringify(compra),
+        headers: headers
+    })
+    .then(resposta => {
+        resposta.json()
+        .then((conteudo) => {
+            if (resposta.status == 201){
+              CancelarAlteracaoCompra();    
+            } else{
+              if (resposta.status = 400){
+                document.getElementById('erroCompra').innerHTML = conteudo.erro;
+                return false;                            
+              } else {
+                console.log(resposta);
+                alert('Houve um erro ao salvar a compra!');
+                return false;                    
+              }
+            }
+        }); 
+    })
+    .catch((erro) => {
+        alert('Houve um erro ao salvar a compra! \n' + erro.message);
+        return false;
+    }); 
+  } else {
+    fetch(`http://localhost:5000/api/compras/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(compra),
+        headers: headers
+    })
+    .then(resposta => {
+        resposta.json()
+        .then((conteudo) => {
+            if (resposta.status == 200){
+              CancelarAlteracaoCompra();    
+            } else{
+              if (resposta.status = 400){
+                document.getElementById('erroCompra').innerHTML = conteudo.erro;
+                return false;                            
+              } else {
+                console.log(resposta);
+                alert('Houve um erro ao salvar a compra!');
+                return false;                    
+              }
+            } 
+        }); 
+    })
+    .catch((erro) => {
+        alert('Houve um erro ao salvar a compra! \n' + erro.message);
+        return false;
+    }); 
+  }    
 }

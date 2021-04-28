@@ -13,5 +13,6 @@ app.use('/api/usuarios', require('./routes/api/usuarios'));
 app.use('/api/dashboard', require('./routes/api/dashboard'));
 app.use('/api/meiospagamento', require('./routes/api/meiospagamento'));
 app.use('/api/categorias', require('./routes/api/categorias'));
+app.use('/api/compras', require('./routes/api/compras'));
 
 app.listen(PORTA, () => console.log(`Servidor inciado na porta ${PORTA}`));

@@ -35,7 +35,7 @@ CREATE TABLE controlegastos.meiospagamento (
 CREATE TABLE controlegastos.compras (
   Id bigint unsigned NOT NULL AUTO_INCREMENT,
   Descricao varchar(100) NOT NULL,
-  Data_Compra timestamp NOT NULL,
+  Data_Compra date NOT NULL,
   Id_Categoria bigint unsigned DEFAULT NULL,
   Id_MeioPagamento bigint unsigned DEFAULT NULL,
   Parcelas int unsigned NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE controlegastos.compras (
 
 CREATE TABLE controlegastos.parcelas (
   Id bigint unsigned NOT NULL AUTO_INCREMENT,
-  Data_Vencimento timestamp NOT NULL,
+  Data_Vencimento date NOT NULL,
   Valor double NOT NULL,
   Id_Compra bigint unsigned NOT NULL,
   PRIMARY KEY (Id),

@@ -34,6 +34,15 @@ body{
     padding: 14px 16px;
     transition: 0.3s;
 }
+.tabLink2{
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 1px 1px;
+    transition: 0.3s;
+}
 .tabLink:hover{
     background-color: #ddd;
 }
@@ -98,11 +107,20 @@ body{
     border-collapse: collapse;
     border: 1px solid #ccc;
 }
+tbody tr:nth-child(even){
+    background-color: rgb(245, 245, 245);
+}
 .tituloTabela{
     text-align: center;
     font-weight: bold;
     background-color: #f1f1f1; 
     padding: 14px 16px;   
+}
+.tituloTabela2{
+    text-align: center;
+    font-weight: bold;
+    background-color: #f1f1f1; 
+    padding: 5px 5px;   
 }
 .submit{
     width: 200px;
