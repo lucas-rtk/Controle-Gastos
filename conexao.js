@@ -8,11 +8,13 @@ class Conexao {
     
     query(sql, args) {
         return new Promise((resolve, reject) => {
-            this.connection.query(sql, args, (erro, linhas) => {
+            let logger = this.connection.query(sql, args, (erro, linhas) => {
                 if (erro)
                     return reject(erro);
                 resolve(linhas);
-            } );
+            } );         
+            
+            //console.log(logger.sql);
         } );
     }
 

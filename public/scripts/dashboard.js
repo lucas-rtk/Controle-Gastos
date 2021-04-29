@@ -120,7 +120,9 @@ function Deslogar(){
 }
 
 function GerarGraficoPizzaOuColuna(tipo, url, titulo, div, spanErro){
-  fetch(`http://localhost:5000/api/dashboard/graficos/pizza/${url}`)
+  let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+
+  fetch(`http://localhost:5000/api/dashboard/graficos/pizza/${url}?id_usuario=${usuario.id}`)
   .then(resposta => {
       resposta.json()
       .then((json) => {
@@ -135,7 +137,7 @@ function GerarGraficoPizzaOuColuna(tipo, url, titulo, div, spanErro){
             
             if (tipo == 'pizza'){
               var options = {
-                legend: { position: 'bottom' },
+                legend: { position: 'top', maxLines: 3 },
                 tooltip: { text : 'percentage' },
                 title: `Compras neste mês por ${titulo}`,
                 width: 400,
@@ -149,7 +151,7 @@ function GerarGraficoPizzaOuColuna(tipo, url, titulo, div, spanErro){
                 title: `Compras neste mês por ${titulo}`,
                 width: 400,
                 height: 400,
-                legend: { position: "none" }
+                legend: { position: 'none' }
               };            
   
               var chart = new google.visualization.ColumnChart(document.getElementById(div));
@@ -168,7 +170,9 @@ function GerarGraficoPizzaOuColuna(tipo, url, titulo, div, spanErro){
 }
 
 function GerarGraficoLinhas(url, titulo, div, spanErro){
-  fetch(`http://localhost:5000/api/dashboard/graficos/linhas/${url}`)
+  let usuario = JSON.parse(sessionStorage.getItem("usuario"));
+
+  fetch(`http://localhost:5000/api/dashboard/graficos/linhas/${url}?id_usuario=${usuario.id}`)
   .then(resposta => {
       resposta.json()
       .then((json) => {
@@ -176,20 +180,19 @@ function GerarGraficoLinhas(url, titulo, div, spanErro){
             let data = new google.visualization.DataTable();
             data.addColumn("string", "ano-mes");
 
-            json.series.forEach(item => {
+            json.series.forEach(item => {              
               data.addColumn('number', item);
             });            
 
-            json.valores.forEach(item => {
+            json.valores.forEach(item => {                                                      
               data.addRows([item]);
             });
             
             let options = {
-              title: `Evolução dos gastos nos últimos 6 meses por ${titulo}`,
-              curveType: 'function',
+              title: `Evolução dos gastos nos últimos 3 meses por ${titulo}`,
               width: 400,
               height: 400,
-              legend: { position: 'bottom' }
+              legend: { position: 'top', maxLines: 3 }
             };
           
             let chart = new google.visualization.LineChart(document.getElementById(div));          

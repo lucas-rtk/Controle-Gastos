@@ -6,7 +6,7 @@ const app = express();
 const PORTA = 5000;
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(logger);
+//app.use(logger);
 app.use(cors());
 app.use(express.json());
 app.use('/api/usuarios', require('./routes/api/usuarios'));

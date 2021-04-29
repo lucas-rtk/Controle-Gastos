@@ -3,6 +3,9 @@ const router = express.Router();
 const Conexao = require('../../conexao');
 
 router.get('/graficos/:tipo/:classificacao', (requisicao, resposta) => {
+    if (requisicao.query['id_usuario'] == null)
+        return resposta.status(400).json({ erro: "ID do usuário não informado!" });
+
     let tipo = requisicao.params.tipo;
     let classificacao = requisicao.params.classificacao;
     if ((tipo != 'pizza') && (tipo != 'colunas') && (tipo != 'linhas'))
@@ -26,22 +29,22 @@ router.get('/graficos/:tipo/:classificacao', (requisicao, resposta) => {
     let dataPesquisaFim = ano + '-' + (mes + 1) + '-' + dataUltimoDia.getDate();
 
     if (tipo == 'pizza' || tipo == 'colunas'){
-        ExecutarSQLPizzaOuColunas(classificacao, [dataPesquisaIni, dataPesquisaFim])
+        ExecutarSQLPizzaOuColunas(classificacao, [dataPesquisaIni, dataPesquisaFim, requisicao.query['id_usuario']])
         .then(resultado => {
             return resposta.status(200).json(resultado);
         })
         .catch(erro => { 
             return resposta.status(500).json({ erro: erro.message })
         });
-    } else {
-        // ExecutarSQLLinhas(classificacao, dataPesquisaIni, dataPesquisaFim)
-        // .then(resultado => {
-        //     return resposta.status(200).json(resultado);
-        // })
-        // .catch(erro => { 
-        //     return resposta.status(500).json({ erro: erro.message })
-        // });
-        return resposta.status(200).json({"series": ["x", "y", "z"], "valores": [["2021-02", 199.25, 200.56, 1300.74], ["2021-03", 250.00, 743.43, 800.41], ["2021-04", 0, 463.11, 998.43]]});
+    } else {        
+        ExecutarSQLLinhas(classificacao, dataPesquisaIni, dataPesquisaFim, requisicao.query['id_usuario'])
+        .then(resultado => {
+            return resposta.status(200).json(resultado);
+        })
+        .catch(erro => { 
+            return resposta.status(500).json({ erro: erro.message })
+        });
+        // return resposta.status(200).json({"series": ["x", "y", "z"], "valores": [["2021-02", 199.25, 200.56, 1300.74], ["2021-03", 250.00, 743.43, 800.41], ["2021-04", 0, 463.11, 998.43]]});
     }   
 });
 
@@ -54,6 +57,7 @@ function ExecutarSQLPizzaOuColunas(classificacao, params){
          INNER JOIN categorias cat on (compras.Id_Categoria = cat.Id)
          INNER JOIN parcelas parcelas on (compras.Id = parcelas.Id_compra)
          WHERE parcelas.Data_Vencimento BETWEEN ? AND ?
+         AND compras.Id_Usuario = ?
          GROUP BY compras.Id_Categoria;`;
     else
         sql = 
@@ -62,6 +66,7 @@ function ExecutarSQLPizzaOuColunas(classificacao, params){
          INNER JOIN meiospagamento meios on (compras.Id_MeioPagamento = meios.Id)
          INNER JOIN parcelas parcelas on (compras.Id = parcelas.Id_compra)
          WHERE parcelas.Data_Vencimento BETWEEN ? AND ?
+         AND compras.Id_Usuario = ?
          GROUP BY compras.Id_MeioPagamento;`;
 
     return new Promise((resolve, reject) => {
@@ -79,70 +84,76 @@ function ExecutarSQLPizzaOuColunas(classificacao, params){
     });      
 }
 
-function ExecutarSQLLinhas(classificacao, dataPesquisaIni, dataPesquisaFim){
+async function ExecutarSQLLinhas(classificacao, dataPesquisaIni, dataPesquisaFim, idUsuario){
     let sql;
     if (classificacao == 'categorias')
         sql = 
-        `SELECT cat.Descricao AS descricao
-        FROM compras compras
-        INNER JOIN categorias cat on (compras.Id_Categoria = cat.Id)
-        WHERE Data_Compra BETWEEN ? AND ?
-        GROUP BY compras.Id_Categoria
-        ORDER BY cat.Descricao;`;
+        `SELECT DISTINCT compras.Id_Categoria AS id, cat.Descricao AS descricao FROM compras compras INNER JOIN categorias cat ON (compras.Id_Categoria = cat.Id) INNER JOIN parcelas parcelas ON (compras.Id = parcelas.Id_Compra)
+         WHERE compras.Id_Usuario = ? AND parcelas.Data_Vencimento BETWEEN ? AND ? GROUP BY compras.Id_Categoria ORDER BY cat.Descricao;`; 
     else
         sql = 
-        `SELECT meios.Descricao AS descricao
-         FROM compras compras
-         INNER JOIN meiospagamento meios on (compras.Id_MeioPagamento = meios.Id)
-         WHERE Data_Compra BETWEEN ? AND ?
-         GROUP BY compras.Id_MeioPagamento
-         ORDER BY meios.Descricao;`;    
+        `SELECT DISTINCT compras.Id_MeioPagamento AS id, meios.Descricao AS descricao FROM compras compras INNER JOIN meiospagamento meios ON (compras.Id_MeioPagamento = meios.Id) INNER JOIN parcelas parcelas ON (compras.Id = parcelas.Id_Compra)
+         WHERE compras.Id_Usuario = ? AND parcelas.Data_Vencimento BETWEEN ? AND ? GROUP BY compras.Id_MeioPagamento ORDER BY meios.Descricao;`;    
 
-    return new Promise((resolve, reject) => {
-        let retorno = { series: [], valores: [[], [], [], [], [], []] };
-        const conexao = new Conexao();        
-        conexao.query(sql, [dataPesquisaIni, dataPesquisaFim])
-            .then(resultado => {
-                if (classificacao == 'categorias')
-                    sql = 
-                    `SELECT COALESCE(ROUND(SUM(parcelas.Valor), 2), 0) AS valor
-                     FROM categorias cat
-                     LEFT JOIN compras compras ON (cat.Id = compras.Id_Categoria)
-                     LEFT JOIN parcelas parcelas ON (compras.Id = parcelas.Id_Compra)
-                     WHERE cat.Descricao = ?
-                    AND parcelas.Data_Vencimento BETWEEN ? AND ?`;
-                else
-                    sql = 
-                    ``;
+    let retorno = { series: [], valores: [[], [], []] };
+    let faltante = 99;
+    const conexao = new Conexao();                
+    conexao.query(sql, [idUsuario, dataPesquisaIni, dataPesquisaFim])
+    .then(resultado => {
+        if (classificacao == 'categorias')
+            sql = 
+            `SELECT COALESCE(ROUND(SUM(parcelas.Valor), 2), 0) AS valor FROM categorias cat LEFT JOIN compras compras ON (cat.Id = compras.Id_Categoria) LEFT JOIN parcelas parcelas ON (compras.Id = parcelas.Id_Compra)
+             WHERE compras.id_Usuario = ? AND compras.Id_Categoria = ? AND parcelas.Data_Vencimento BETWEEN ? AND ?`;
+        else
+            sql = 
+            `SELECT COALESCE(ROUND(SUM(parcelas.Valor), 2), 0) AS valor FROM meiospagamento meios LEFT JOIN compras compras ON (meios.Id = compras.Id_MeioPagamento) LEFT JOIN parcelas parcelas ON (compras.Id = parcelas.Id_Compra)
+             WHERE compras.id_Usuario = ? AND compras.Id_MeioPagamento = ? AND parcelas.Data_Vencimento BETWEEN ? AND ?`;                              
+            
+        faltante = resultado.length * 3;
 
-                resultado.forEach(linha => {
-                    retorno.series.push(linha.descricao);
+        //preenche só as datas primeiro
+        for (let j = 2; j >= 0; j--) {   
+            let dataTemp = new Date(dataPesquisaFim);
+            dataTemp.setDate(1);
+            dataTemp.setMonth(dataTemp.getMonth() - j);
+            let mes = String("00" + (dataTemp.getMonth() + 1)).slice(-2);                        
+                
+            let dataSerieIni = dataTemp.getFullYear() + '-' + mes + '-01';
 
-                    for (let i = 5; i >= 0; i--) {                    
-                        let dataTemp = new Date(dataPesquisaFim);
-                        dataTemp.setDate(1);
-                        dataTemp.setMonth(dataTemp.getMonth() - i);
-                        let dataTempUltimoDia = new Date(dataTemp.getFullYear(), dataTemp.getMonth() + 1, 0);
-                        let mes = String("00" + (dataTemp.getMonth() + 1)).slice(-2);                        
-                        
-                        let dataSerieIni = dataTemp.getFullYear() + '-' + mes + '-01';
-                        let dataSerieFim = dataTemp.getFullYear() + '-' + mes + '-' + dataTempUltimoDia.getDate();
+            retorno.valores[Math.abs(j - 2)].push(dataSerieIni.substring(0, 7));                        
+        }
 
-                        //retorno.valores[Math.abs(i - 5)].push(dataSerieIni.substring(0, 7));
+        for (let i = 0; i < resultado.length; i++) {
+            retorno.series.push(resultado[i].descricao);
+                
+            for (let j = 2; j >= 0; j--) {   
+                let dataTemp = new Date(dataPesquisaFim);
+                dataTemp.setDate(1);
+                dataTemp.setMonth(dataTemp.getMonth() - j);
+                let dataTempUltimoDia = new Date(dataTemp.getFullYear(), dataTemp.getMonth() + 1, 0);
+                let mes = String("00" + (dataTemp.getMonth() + 1)).slice(-2);                        
+                    
+                let dataSerieIni = dataTemp.getFullYear() + '-' + mes + '-01';
+                let dataSerieFim = dataTemp.getFullYear() + '-' + mes + '-' + dataTempUltimoDia.getDate();
 
-                        conexao.query(sql, [linha.descricao, dataSerieIni, dataSerieFim])
-                        .then(resultado => {                          
-                            retorno.valores[Math.abs(i - 5)].push(resultado[0].valor);
-                        })
-                        .catch(erro => { throw erro; })                        
-                    }                    
-                });
+                conexao.query(sql, [idUsuario, resultado[i].id, dataSerieIni, dataSerieFim])
+                .then(resultado2 => {                                
+                    retorno.valores[Math.abs(j - 2)].push(resultado2[0].valor || 0);
+                    faltante--;
+                })
+                .catch(erro => { console.log(erro) })
+            }                           
+        }             
+    })
+    .catch(erro => { console.log(erro) })
+    .finally(() => { 
+        conexao.close(); 
+    });
 
-                resolve(retorno);
-            })
-            .catch(erro => { throw erro; })
-            .finally(() => { conexao.close(); });
-        });
+    do{
+        await new Promise(r => setTimeout(r, 500));
+    } while (faltante != 0);
+    return retorno;     
 }
 
 module.exports = router;
